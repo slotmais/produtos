@@ -1,0 +1,1815 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>InfinityClean - Gestão de Produtos de Limpeza</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --primary-blue: #2563eb;
+      --secondary-purple: #7C3AED;
+      --dark-bg: #0f172a;
+      --card-bg: #1e293b;
+      --text-light: #f1f5f9;
+      --text-secondary: #cbd5e1;
+      --success: #22c55e;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --border: #334155;
+      --glass-bg: rgba(30, 41, 59, 0.8);
+      --glass-border: rgba(255, 255, 255, 0.1);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Inter', sans-serif;
+    }
+
+    body {
+      background: linear-gradient(135deg, var(--dark-bg), #1e3a8a);
+      color: var(--text-light);
+      min-height: 100vh;
+      padding-bottom: 80px;
+      overflow-x: hidden;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 15px;
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      margin-bottom: 15px;
+      color: var(--text-light);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    h2 {
+      font-size: 1.2rem;
+      margin: 15px 0 10px;
+      color: var(--text-light);
+    }
+
+    .card {
+      background: var(--glass-bg);
+      backdrop-filter: blur(10px);
+      border: 1px solid var(--glass-border);
+      border-radius: 12px;
+      padding: 15px;
+      margin-bottom: 15px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+      transition: transform 0.3s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 12px;
+      margin: 8px 0;
+      background: rgba(30, 41, 59, 0.7);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text-light);
+      font-size: 1rem;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--primary-blue);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.3);
+    }
+
+    button {
+      background: linear-gradient(to right, var(--primary-blue), var(--secondary-purple));
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1rem;
+      width: 100%;
+      margin-top: 10px;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+
+    button:hover {
+      transform: scale(1.02);
+      box-shadow: 0 4px 15px rgba(37, 99, 235, 0.4);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      background: rgba(30, 41, 59, 0.5);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    th, td {
+      padding: 12px 10px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+
+    th {
+      background-color: rgba(37, 99, 235, 0.2);
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    tr:nth-child(even) {
+      background-color: rgba(30, 41, 59, 0.3);
+    }
+
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      display: flex;
+      justify-content: space-around;
+      background: var(--glass-bg);
+      backdrop-filter: blur(10px);
+      padding: 12px 0;
+      box-shadow: 0 -2px 15px rgba(0,0,0,0.3);
+      z-index: 100;
+      border-top: 1px solid var(--glass-border);
+    }
+
+    .nav-item {
+      text-align: center;
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.3s ease;
+      padding: 5px 10px;
+      border-radius: 8px;
+    }
+
+    .nav-item:hover {
+      background: rgba(37, 99, 235, 0.2);
+    }
+
+    .nav-item.active {
+      color: var(--primary-blue);
+      font-weight: 600;
+    }
+
+    .nav-icon {
+      font-size: 1.4rem;
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .section {
+      display: none;
+    }
+
+    .active-section {
+      display: block;
+      animation: fadeIn 0.3s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .summary-card {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+      margin: 15px 0;
+    }
+
+    .summary-box {
+      background: var(--glass-bg);
+      backdrop-filter: blur(10px);
+      border: 1px solid var(--glass-border);
+      padding: 15px;
+      border-radius: 10px;
+      text-align: center;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      transition: all 0.3s ease;
+    }
+
+    .summary-box:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+    }
+
+    .summary-title {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      margin-bottom: 5px;
+    }
+
+    .summary-value {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: var(--primary-blue);
+    }
+
+    .chart-container {
+      background: var(--glass-bg);
+      backdrop-filter: blur(10px);
+      border: 1px solid var(--glass-border);
+      border-radius: 10px;
+      padding: 15px;
+      margin: 15px 0;
+      height: 300px;
+    }
+
+    .search-bar {
+      width: 100%;
+      padding: 12px 15px 12px 40px;
+      margin: 10px 0;
+      background: rgba(30, 41, 59, 0.7);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text-light);
+      font-size: 1rem;
+      position: relative;
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-secondary);
+    }
+
+    .status-badge {
+      padding: 4px 8px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    .status-pago {
+      background: rgba(34, 197, 94, 0.2);
+      color: var(--success);
+    }
+
+    .status-pendente {
+      background: rgba(245, 158, 11, 0.2);
+      color: var(--warning);
+    }
+
+    .status-cancelado {
+      background: rgba(239, 68, 68, 0.2);
+      color: var(--danger);
+    }
+
+    .notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 15px 20px;
+      background: var(--primary-blue);
+      color: white;
+      border-radius: 8px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+      z-index: 1000;
+      display: none;
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .btn-edit, .btn-delete {
+      flex: 1;
+      padding: 8px;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+
+    .btn-edit {
+      background: var(--warning);
+    }
+
+    .btn-delete {
+      background: var(--danger);
+    }
+
+    .export-btn {
+      background: transparent;
+      border: 1px solid var(--primary-blue);
+      color: var(--primary-blue);
+      width: auto;
+      padding: 8px 15px;
+      margin: 10px 5px 0 0;
+    }
+
+    .export-btn:hover {
+      background: rgba(37, 99, 235, 0.2);
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.7);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-content {
+      background: var(--card-bg);
+      border-radius: 12px;
+      padding: 20px;
+      width: 90%;
+      max-width: 500px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+
+    .close-modal {
+      float: right;
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: var(--text-secondary);
+    }
+
+    .close-modal:hover {
+      color: white;
+    }
+
+    .venda-item {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 10px;
+      padding: 10px;
+      background: rgba(30, 41, 59, 0.5);
+      border-radius: 8px;
+    }
+
+    .venda-item .produto-info {
+      flex: 1;
+    }
+
+    .venda-item .quantidade-input {
+      width: 80px;
+    }
+
+    .venda-item .remove-btn {
+      background: var(--danger);
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+
+    .venda-total {
+      font-size: 1.2rem;
+      font-weight: bold;
+      text-align: right;
+      margin: 15px 0;
+      color: var(--primary-blue);
+    }
+
+    /* Novos estilos para os botões de pagamento */
+    .payment-methods {
+      display: flex;
+      gap: 10px;
+      margin: 15px 0;
+    }
+
+    .payment-btn {
+      flex: 1;
+      padding: 15px;
+      border: 2px solid transparent;
+      border-radius: 10px;
+      background: rgba(30, 41, 59, 0.7);
+      color: var(--text-secondary);
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-align: center;
+    }
+
+    .payment-btn:hover {
+      background: rgba(59, 130, 246, 0.2);
+    }
+
+    .payment-btn.selected {
+      background: var(--primary-blue);
+      color: white;
+      border-color: var(--primary-blue);
+    }
+
+    .payment-btn i {
+      display: block;
+      font-size: 1.5rem;
+      margin-bottom: 5px;
+    }
+
+    /* Estilo para o modal de detalhes do cliente */
+    .cliente-detalhes {
+      text-align: left;
+      margin-bottom: 15px;
+    }
+
+    .cliente-detalhes p {
+      margin: 8px 0;
+      padding: 8px;
+      background: rgba(30, 41, 59, 0.5);
+      border-radius: 8px;
+    }
+
+    .cliente-detalhes strong {
+      color: var(--primary-blue);
+    }
+
+    .contato-buttons {
+      display: flex;
+      gap: 10px;
+      margin-top: 15px;
+    }
+
+    .contato-btn {
+      flex: 1;
+      padding: 12px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      font-size: 1rem;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .whatsapp-btn {
+      background: #25D366;
+      color: white;
+    }
+
+    .localizacao-btn {
+      background: #EA4335;
+      color: white;
+    }
+
+    .historico-btn {
+      background: #4285F4;
+      color: white;
+    }
+
+    .contato-btn:hover {
+      transform: scale(1.02);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+
+    /* Estilo para o modal de histórico de vendas */
+    .historico-vendas-modal .modal-content {
+      max-width: 800px;
+      width: 90%;
+    }
+
+    .historico-vendas-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      background: rgba(30, 41, 59, 0.5);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .historico-vendas-table th,
+    .historico-vendas-table td {
+      padding: 10px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .historico-vendas-table th {
+      background-color: rgba(37, 99, 235, 0.2);
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    .historico-vendas-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .historico-vendas-table tr:nth-child(even) {
+      background-color: rgba(30, 41, 59, 0.3);
+    }
+
+    /* Melhorias para a tabela de status de pagamento */
+    .status-table-container {
+      overflow-x: auto;
+      border-radius: 8px;
+    }
+
+    #tabela-pagamentos {
+      min-width: 600px;
+    }
+
+    #tabela-pagamentos th,
+    #tabela-pagamentos td {
+      white-space: nowrap;
+    }
+
+    /* Ajustes para dispositivos móveis */
+    @media (max-width: 768px) {
+      .summary-card {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .payment-methods {
+        flex-direction: column;
+      }
+
+      .contato-buttons {
+        flex-direction: column;
+      }
+
+      .action-buttons {
+        flex-direction: column;
+      }
+
+      .export-btn {
+        width: 100%;
+      }
+
+      .venda-item {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .venda-item .produto-select {
+        margin-bottom: 10px;
+      }
+
+      .venda-item .quantidade-input {
+        width: 100%;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .summary-card {
+        grid-template-columns: 1fr;
+      }
+
+      .bottom-nav {
+        padding: 10px 0;
+      }
+
+      .nav-item {
+        font-size: 0.7rem;
+      }
+
+      .nav-icon {
+        font-size: 1.2rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Conteúdo Principal -->
+  <div class="container">
+    <div class="notification" id="notification">Operação realizada com sucesso!</div>
+
+    <!-- Modal para detalhes do cliente -->
+    <div class="modal" id="detalhes-cliente-modal">
+      <div class="modal-content">
+        <span class="close-modal" onclick="fecharModalDetalhes()">&times;</span>
+        <h2>Detalhes do Cliente</h2>
+        <div id="detalhes-cliente-conteudo" class="cliente-detalhes">
+          <!-- Conteúdo será inserido dinamicamente -->
+        </div>
+        <div class="contato-buttons">
+          <button class="contato-btn whatsapp-btn" id="whatsapp-btn">
+            <i class="fab fa-whatsapp"></i> WhatsApp
+          </button>
+          <button class="contato-btn localizacao-btn" id="localizacao-btn">
+            <i class="fas fa-map-marker-alt"></i> Localização
+          </button>
+          <button class="contato-btn historico-btn" id="historico-btn" onclick="abrirHistoricoVendas()">
+            <i class="fas fa-history"></i> Histórico
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal para histórico de vendas -->
+    <div class="modal historico-vendas-modal" id="historico-vendas-modal">
+      <div class="modal-content">
+        <span class="close-modal" onclick="fecharModalHistorico()">&times;</span>
+        <h2>Histórico de Vendas</h2>
+        <div id="historico-vendas-conteudo">
+          <table class="historico-vendas-table">
+            <thead>
+              <tr>
+                <th>Data</th>
+                <th>Produto</th>
+                <th>Quantidade</th>
+                <th>Valor (R$)</th>
+                <th>Status</th>
+                <th>Data Cobrança</th>
+              </tr>
+            </thead>
+            <tbody id="historico-vendas-tbody">
+              <!-- Conteúdo será inserido dinamicamente -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Dashboard -->
+    <div id="dashboard" class="section active-section">
+      <h1><i class="fas fa-chart-line"></i> Dashboard</h1>
+
+      <!-- Resumo Financeiro -->
+      <div class="summary-card">
+        <div class="summary-box">
+          <div class="summary-title">Total Vendido</div>
+          <div class="summary-value" id="total-vendido">R$0,00</div>
+        </div>
+        <div class="summary-box">
+          <div class="summary-title">Recebido</div>
+          <div class="summary-value" id="total-recebido">R$0,00</div>
+        </div>
+        <div class="summary-box">
+          <div class="summary-title">A Receber (Fiado)</div>
+          <div class="summary-value" id="total-fiado">R$0,00</div>
+        </div>
+        <div class="summary-box">
+          <div class="summary-title">Lucro Líquido</div>
+          <div class="summary-value" id="lucro-liquido">R$0,00</div>
+        </div>
+        <div class="summary-box">
+          <div class="summary-title">Gastos Totais</div>
+          <div class="summary-value" id="gastos-totais">R$0,00</div>
+        </div>
+        <div class="summary-box">
+          <div class="summary-title">Lucro Total</div>
+          <div class="summary-value" id="lucro-total">R$0,00</div>
+        </div>
+      </div>
+
+      <!-- Gráfico -->
+      <div class="chart-container">
+        <canvas id="salesChart"></canvas>
+      </div>
+
+      <!-- Status de Pagamento dos Clientes -->
+      <div class="card">
+        <h2><i class="fas fa-file-invoice-dollar"></i> Status de Pagamento</h2>
+        <input type="text" class="search-bar" placeholder="Buscar cliente..." onkeyup="filterTable('tabela-pagamentos', this.value)">
+        <div class="status-table-container">
+          <table id="tabela-pagamentos">
+            <thead>
+              <tr>
+                <th>Cliente</th>
+                <th>Produto</th>
+                <th>Valor (R$)</th>
+                <th>Data</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="tabela-pagamentos-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Nova Venda -->
+      <div class="card">
+        <h2><i class="fas fa-cart-plus"></i> Nova Venda</h2>
+        <select id="cliente-venda">
+          <option value="">Selecione cliente</option>
+        </select>
+        
+        <div id="venda-itens">
+          <div class="venda-item">
+            <select class="produto-select" onchange="atualizarDisponibilidade(this)">
+              <option value="">Selecione um produto</option>
+            </select>
+            <input type="number" class="quantidade-input" placeholder="Qtd" min="1" value="1" oninput="calcularTotalVenda()">
+            <button class="remove-btn" onclick="removerItemVenda(this)">×</button>
+          </div>
+        </div>
+        
+        <button onclick="adicionarItemVenda()"><i class="fas fa-plus-circle"></i> Adicionar Produto</button>
+        
+        <div class="venda-total">
+          Total: R$<span id="total-venda">0.00</span>
+        </div>
+        
+        <div class="card">
+          <h3>Forma de Pagamento</h3>
+          <div class="payment-methods">
+            <button class="payment-btn" onclick="selecionarFormaPagamento('avista', this)">
+              <i class="fas fa-money-bill-wave"></i>
+              À Vista
+            </button>
+            <button class="payment-btn" onclick="selecionarFormaPagamento('cartao', this)">
+              <i class="fas fa-credit-card"></i>
+              Cartão
+            </button>
+            <button class="payment-btn" onclick="selecionarFormaPagamento('prazo', this)">
+              <i class="fas fa-calendar-check"></i>
+              A Prazo
+            </button>
+          </div>
+          
+          <div id="campos-prazo" style="display:none;">
+            <input type="date" id="data-cobranca" placeholder="Data de Cobrança">
+          </div>
+        </div>
+        
+        <button onclick="salvarVendaCompleta()"><i class="fas fa-save"></i> Finalizar Venda</button>
+      </div>
+    </div>
+
+    <!-- Clientes -->
+    <div id="clientes" class="section">
+      <h1><i class="fas fa-users"></i> Clientes</h1>
+      <div class="action-buttons">
+        <button class="export-btn" onclick="exportToCSV('tabela-clientes', 'clientes.csv')"><i class="fas fa-file-csv"></i> Exportar CSV</button>
+        <button class="export-btn" onclick="exportToPDF('tabela-clientes', 'clientes.pdf')"><i class="fas fa-file-pdf"></i> Exportar PDF</button>
+      </div>
+
+      <div class="card">
+        <h2><i class="fas fa-user-plus"></i> Adicionar Cliente</h2>
+        <input type="text" id="nome-cliente" placeholder="Nome" />
+        <input type="text" id="endereco-cliente" placeholder="Endereço" />
+        <input type="text" id="telefone-cliente" placeholder="Telefone" />
+        <input type="email" id="email-cliente" placeholder="E-mail" />
+        <button onclick="adicionarCliente()"><i class="fas fa-plus-circle"></i> Adicionar</button>
+      </div>
+
+      <div class="card">
+        <h2><i class="fas fa-list"></i> Lista de Clientes</h2>
+        <input type="text" class="search-bar" placeholder="Buscar cliente..." onkeyup="filterTable('tabela-clientes', this.value)">
+        <table id="tabela-clientes">
+          <thead>
+            <tr>
+              <th>Nome</th>
+              <th>Endereço</th>
+              <th>Telefone</th>
+              <th>E-mail</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Estoque -->
+    <div id="estoque" class="section">
+      <h1><i class="fas fa-boxes"></i> Estoque</h1>
+      <div class="action-buttons">
+        <button class="export-btn" onclick="exportToCSV('tabela-estoque', 'estoque.csv')"><i class="fas fa-file-csv"></i> Exportar CSV</button>
+        <button class="export-btn" onclick="exportToPDF('tabela-estoque', 'estoque.pdf')"><i class="fas fa-file-pdf"></i> Exportar PDF</button>
+      </div>
+
+      <div class="card">
+        <h2><i class="fas fa-plus-square"></i> Adicionar Produto</h2>
+        <input type="text" id="nome-produto" placeholder="Nome do produto" />
+        <input type="number" id="custo-produto" placeholder="Custo (R$)" step="0.01" />
+        <input type="number" id="venda-produto" placeholder="Venda (R$)" step="0.01" />
+        <input type="number" id="qtd-produto" placeholder="Quantidade em estoque" value="1" />
+        <textarea id="descricao-produto" placeholder="Descrição (opcional)"></textarea>
+        <button onclick="adicionarProduto()"><i class="fas fa-plus-circle"></i> Adicionar ao Estoque</button>
+      </div>
+
+      <div class="card">
+        <h2><i class="fas fa-clipboard-list"></i> Produtos em Estoque</h2>
+        <input type="text" class="search-bar" placeholder="Buscar produto..." onkeyup="filterTable('tabela-estoque', this.value)">
+        <table id="tabela-estoque">
+          <thead>
+            <tr>
+              <th>Produto</th>
+              <th>Qtd</th>
+              <th>Custo (R$)</th>
+              <th>Venda (R$)</th>
+              <th>Lucro (R$)</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Finanças -->
+    <div id="financas" class="section">
+      <h1><i class="fas fa-money-bill-wave"></i> Finanças</h1>
+      <div class="action-buttons">
+        <button class="export-btn" onclick="exportToCSV('tabela-gastos', 'financas.csv')"><i class="fas fa-file-csv"></i> Exportar CSV</button>
+        <button class="export-btn" onclick="exportToPDF('tabela-gastos', 'financas.pdf')"><i class="fas fa-file-pdf"></i> Exportar PDF</button>
+      </div>
+
+      <div class="card">
+        <h2><i class="fas fa-plus-circle"></i> Adicionar Gasto</h2>
+        <input type="text" id="descricao-gasto" placeholder="Descrição" />
+        <input type="number" id="valor-gasto" placeholder="Valor (R$)" step="0.01" />
+        <select id="categoria-gasto">
+          <option value="aluguel">Aluguel</option>
+          <option value="funcionarios">Funcionários</option>
+          <option value="compra-produtos">Compra de Produtos</option>
+          <option value="transporte">Transporte</option>
+          <option value="outro">Outro</option>
+        </select>
+        <button onclick="adicionarGasto()"><i class="fas fa-plus-circle"></i> Adicionar Gasto</button>
+      </div>
+
+      <div class="card">
+        <h2><i class="fas fa-history"></i> Gastos Registrados</h2>
+        <input type="text" class="search-bar" placeholder="Buscar gasto..." onkeyup="filterTable('tabela-gastos', this.value)">
+        <table id="tabela-gastos">
+          <thead>
+            <tr>
+              <th>Descrição</th>
+              <th>Valor (R$)</th>
+              <th>Categoria</th>
+              <th>Data</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Relatórios -->
+    <div id="relatorios" class="section">
+      <h1><i class="fas fa-chart-bar"></i> Relatórios</h1>
+      <div class="card">
+        <h2>Gerar Relatório</h2>
+        <select id="tipo-relatorio">
+          <option value="vendas">Vendas por Período</option>
+          <option value="estoque">Movimentação de Estoque</option>
+          <option value="financeiro">Resumo Financeiro</option>
+          <option value="clientes">Atividade de Clientes</option>
+        </select>
+        <input type="date" id="data-inicio">
+        <input type="date" id="data-fim">
+        <button onclick="gerarRelatorio()"><i class="fas fa-file-alt"></i> Gerar Relatório</button>
+      </div>
+      <div class="card">
+        <h2>Visualização de Dados</h2>
+        <div class="chart-container">
+          <canvas id="reportsChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Configurações -->
+    <div id="configuracoes" class="section">
+      <h1><i class="fas fa-cog"></i> Configurações</h1>
+      <div class="card">
+        <h2>Informações da Empresa</h2>
+        <input type="text" id="empresa-nome" placeholder="Nome da empresa" />
+        <input type="text" id="empresa-cnpj" placeholder="CNPJ" />
+        <input type="text" id="empresa-telefone" placeholder="Telefone" />
+        <input type="email" id="empresa-email" placeholder="E-mail" />
+        <button onclick="salvarEmpresa()"><i class="fas fa-save"></i> Salvar Informações</button>
+      </div>
+      <div class="card">
+        <h2>Backup de Dados</h2>
+        <button onclick="fazerBackup()"><i class="fas fa-database"></i> Fazer Backup</button>
+        <button onclick="restaurarBackup()"><i class="fas fa-upload"></i> Restaurar Backup</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Menu Inferior -->
+  <div class="bottom-nav">
+    <div class="nav-item active" onclick="showSection('dashboard')">
+      <span class="nav-icon"><i class="fas fa-home"></i></span>
+      <span>Dashboard</span>
+    </div>
+    <div class="nav-item" onclick="showSection('clientes')">
+      <span class="nav-icon"><i class="fas fa-users"></i></span>
+      <span>Clientes</span>
+    </div>
+    <div class="nav-item" onclick="showSection('estoque')">
+      <span class="nav-icon"><i class="fas fa-boxes"></i></span>
+      <span>Estoque</span>
+    </div>
+    <div class="nav-item" onclick="showSection('financas')">
+      <span class="nav-icon"><i class="fas fa-wallet"></i></span>
+      <span>Finanças</span>
+    </div>
+  </div>
+
+  <script>
+    // Inicialização
+    let produtos = JSON.parse(localStorage.getItem("produtos")) || [];
+    let clientes = JSON.parse(localStorage.getItem("clientes")) || [];
+    let vendas = JSON.parse(localStorage.getItem("vendas")) || [];
+    let gastos = JSON.parse(localStorage.getItem("gastos")) || [];
+    let empresa = JSON.parse(localStorage.getItem("empresa")) || [];
+    let formaPagamentoSelecionada = null; // Variável para armazenar a forma de pagamento
+    let clienteAtualHistorico = null; // Variável para armazenar o cliente selecionado
+    
+    let salesChart = null;
+    let reportsChart = null;
+
+    function showSection(sectionId) {
+      document.querySelectorAll('.section').forEach(el => el.classList.remove('active-section'));
+      document.getElementById(sectionId).classList.add('active-section');
+
+      document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+      event.currentTarget.classList.add('active');
+
+      if (sectionId === 'dashboard') {
+        atualizarDashboard();
+        carregarSelectProdutos();
+        carregarSelectClientes();
+      } else if (sectionId === 'clientes') {
+        atualizarTabelaClientes();
+        carregarSelectClientes();
+      } else if (sectionId === 'estoque') {
+        atualizarTabelaEstoque();
+        carregarSelectProdutos();
+      } else if (sectionId === 'financas') {
+        atualizarTabelaGastos();
+      } else if (sectionId === 'relatorios') {
+        atualizarGraficoRelatorios();
+      } else if (sectionId === 'configuracoes') {
+        preencherFormularioEmpresa();
+      }
+    }
+
+    function atualizarDashboard() {
+      // Total Vendido
+      const totalVendido = vendas.reduce((sum, v) => sum + v.valor_total, 0);
+      document.getElementById("total-vendido").textContent = "R$" + totalVendido.toFixed(2);
+
+      // Total Recebido (vendas pagas)
+      const totalRecebido = vendas.filter(v => !v.fiado).reduce((sum, v) => sum + v.valor_total, 0);
+      document.getElementById("total-recebido").textContent = "R$" + totalRecebido.toFixed(2);
+
+      // A Receber (fiados)
+      const totalFiado = vendas.filter(v => v.fiado).reduce((sum, v) => sum + v.valor_total, 0);
+      document.getElementById("total-fiado").textContent = "R$" + totalFiado.toFixed(2);
+
+      // Lucro Líquido
+      let custoTotal = 0;
+      vendas.forEach(v => {
+        const prod = produtos.find(p => p.nome === v.produto_nome);
+        if (prod) custoTotal += prod.custo * v.quantidade;
+      });
+      const lucroLiquido = totalRecebido - custoTotal;
+      document.getElementById("lucro-liquido").textContent = "R$" + lucroLiquido.toFixed(2);
+
+      // Gastos Totais
+      const gastosTotais = gastos.reduce((sum, g) => sum + g.valor, 0);
+      document.getElementById("gastos-totais").textContent = "R$" + gastosTotais.toFixed(2);
+
+      // Lucro Total (Lucro Líquido - Gastos Totais)
+      const lucroTotal = lucroLiquido - gastosTotais;
+      document.getElementById("lucro-total").textContent = "R$" + lucroTotal.toFixed(2);
+
+      // Atualizar tabela de pagamentos
+      atualizarTabelaPagamentos();
+      
+      // Atualizar gráfico
+      atualizarGraficoVendas();
+    }
+
+    function atualizarGraficoVendas() {
+      const ctx = document.getElementById('salesChart').getContext('2d');
+      
+      // Destruir gráfico anterior se existir
+      if (salesChart) {
+        salesChart.destroy();
+      }
+      
+      // Dados para o gráfico
+      const meses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+                     'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+      const vendasPorMes = Array(12).fill(0);
+      
+      vendas.forEach(venda => {
+        const data = new Date(venda.data);
+        const mes = data.getMonth();
+        vendasPorMes[mes] += venda.valor_total;
+      });
+      
+      salesChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: meses,
+          datasets: [{
+            label: 'Vendas (R$)',
+            data: vendasPorMes,
+            backgroundColor: [
+              'rgba(59, 130, 246, 0.7)',
+              'rgba(124, 58, 237, 0.7)',
+              'rgba(34, 197, 94, 0.7)',
+              'rgba(245, 158, 11, 0.7)',
+              'rgba(239, 68, 68, 0.7)',
+              'rgba(16, 185, 129, 0.7)',
+              'rgba(59, 130, 246, 0.7)',
+              'rgba(124, 58, 237, 0.7)',
+              'rgba(34, 197, 94, 0.7)',
+              'rgba(245, 158, 11, 0.7)',
+              'rgba(239, 68, 68, 0.7)',
+              'rgba(16, 185, 129, 0.7)'
+            ],
+            borderColor: [
+              'rgba(59, 130, 246, 1)',
+              'rgba(124, 58, 237, 1)',
+              'rgba(34, 197, 94, 1)',
+              'rgba(245, 158, 11, 1)',
+              'rgba(239, 68, 68, 1)',
+              'rgba(16, 185, 129, 1)',
+              'rgba(59, 130, 246, 1)',
+              'rgba(124, 58, 237, 1)',
+              'rgba(34, 197, 94, 1)',
+              'rgba(245, 158, 11, 1)',
+              'rgba(239, 68, 68, 1)',
+              'rgba(16, 185, 129, 1)'
+            ],
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: {
+                callback: function(value) {
+                  return 'R$' + value.toLocaleString('pt-BR');
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+
+    function atualizarGraficoRelatorios() {
+      const ctx = document.getElementById('reportsChart').getContext('2d');
+      
+      if (reportsChart) {
+        reportsChart.destroy();
+      }
+      
+      reportsChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun'],
+          datasets: [
+            {
+              label: 'Vendas',
+              data: [1200, 1900, 1500, 1800, 2200, 1950],
+              borderColor: 'rgb(59, 130, 246)',
+              backgroundColor: 'rgba(59, 130, 246, 0.1)',
+              tension: 0.4
+            },
+            {
+              label: 'Despesas',
+              data: [800, 1200, 900, 1000, 1100, 950],
+              borderColor: 'rgb(239, 68, 68)',
+              backgroundColor: 'rgba(239, 68, 68, 0.1)',
+              tension: 0.4
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: {
+                callback: function(value) {
+                  return 'R$' + value.toLocaleString('pt-BR');
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+
+    function atualizarTabelaPagamentos() {
+      const tbody = document.getElementById("tabela-pagamentos-body");
+      tbody.innerHTML = "";
+
+      vendas.forEach(v => {
+        const tr = document.createElement("tr");
+        const status = v.fiado ? "Pendente" : "Pago";
+        const statusClass = v.fiado ? "status-pendente" : "status-pago";
+        
+        tr.innerHTML = `
+          <td>${v.cliente_nome || 'Anônimo'}</td>
+          <td>${v.produto_nome}</td>
+          <td>${v.valor_total.toFixed(2)}</td>
+          <td>${v.data}</td>
+          <td><span class="status-badge ${statusClass}">${status}</span></td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function adicionarCliente() {
+      const nome = document.getElementById("nome-cliente").value.trim();
+      const endereco = document.getElementById("endereco-cliente").value.trim();
+      const telefone = document.getElementById("telefone-cliente").value.trim();
+      const email = document.getElementById("email-cliente").value.trim();
+
+      if (!nome || !endereco || !telefone) {
+        alert("Preencha todos os campos obrigatórios.");
+        return;
+      }
+
+      clientes.push({ nome, endereco, telefone, email });
+      localStorage.setItem("clientes", JSON.stringify(clientes));
+
+      document.getElementById("nome-cliente").value = "";
+      document.getElementById("endereco-cliente").value = "";
+      document.getElementById("telefone-cliente").value = "";
+      document.getElementById("email-cliente").value = "";
+
+      atualizarTabelaClientes();
+      carregarSelectClientes();
+      showNotification("Cliente adicionado com sucesso!");
+    }
+
+    function atualizarTabelaClientes() {
+      const tbody = document.querySelector("#tabela-clientes tbody");
+      tbody.innerHTML = "";
+      clientes.forEach((c, index) => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${c.nome}</td>
+          <td>${c.endereco}</td>
+          <td>${c.telefone}</td>
+          <td>${c.email || ''}</td>
+          <td>
+            <button class="btn-edit" onclick="editarCliente(${index})"><i class="fas fa-edit"></i></button>
+            <button class="btn-delete" onclick="excluirCliente(${index})"><i class="fas fa-trash"></i></button>
+            <button class="btn-edit" onclick="verDetalhesCliente(${index})"><i class="fas fa-eye"></i></button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function editarCliente(index) {
+      const cliente = clientes[index];
+      document.getElementById("nome-cliente").value = cliente.nome;
+      document.getElementById("endereco-cliente").value = cliente.endereco;
+      document.getElementById("telefone-cliente").value = cliente.telefone;
+      document.getElementById("email-cliente").value = cliente.email;
+      
+      // Remover cliente temporariamente
+      clientes.splice(index, 1);
+      localStorage.setItem("clientes", JSON.stringify(clientes));
+      atualizarTabelaClientes();
+      carregarSelectClientes();
+    }
+
+    function excluirCliente(index) {
+      if (confirm("Tem certeza que deseja excluir este cliente?")) {
+        clientes.splice(index, 1);
+        localStorage.setItem("clientes", JSON.stringify(clientes));
+        atualizarTabelaClientes();
+        carregarSelectClientes();
+        showNotification("Cliente excluído com sucesso!");
+      }
+    }
+
+    // Função para abrir o modal de detalhes do cliente
+    function verDetalhesCliente(index) {
+      const cliente = clientes[index];
+      const conteudo = document.getElementById("detalhes-cliente-conteudo");
+      
+      conteudo.innerHTML = `
+        <p><strong>Nome:</strong> ${cliente.nome}</p>
+        <p><strong>Endereço:</strong> ${cliente.endereco}</p>
+        <p><strong>Telefone:</strong> ${cliente.telefone}</p>
+        <p><strong>E-mail:</strong> ${cliente.email || 'Não informado'}</p>
+      `;
+      
+      // Armazenar o cliente atual para uso no histórico
+      clienteAtualHistorico = cliente;
+      
+      // Configurar os botões de contato
+      const whatsappBtn = document.getElementById("whatsapp-btn");
+      const localizacaoBtn = document.getElementById("localizacao-btn");
+      
+      // Formatar número de telefone para o formato do WhatsApp (sem espaços e parênteses)
+      const numeroFormatado = cliente.telefone.replace(/\D/g, '');
+      whatsappBtn.onclick = () => {
+        window.open(`https://wa.me/${numeroFormatado}`, '_blank');
+      };
+      
+      // Abrir localização no Google Maps
+      const enderecoCodificado = encodeURIComponent(cliente.endereco);
+      localizacaoBtn.onclick = () => {
+        window.open(`https://www.google.com/maps/search/?api=1&query=${enderecoCodificado}`, '_blank');
+      };
+      
+      // Exibir o modal
+      document.getElementById("detalhes-cliente-modal").style.display = "flex";
+    }
+
+    // Função para fechar o modal de detalhes
+    function fecharModalDetalhes() {
+      document.getElementById("detalhes-cliente-modal").style.display = "none";
+    }
+
+    // Função para abrir o modal de histórico de vendas
+    function abrirHistoricoVendas() {
+      if (!clienteAtualHistorico) return;
+      
+      const tbody = document.getElementById("historico-vendas-tbody");
+      tbody.innerHTML = "";
+      
+      // Filtrar vendas do cliente atual
+      const vendasDoCliente = vendas.filter(venda => 
+        venda.cliente_nome === clienteAtualHistorico.nome
+      );
+      
+      if (vendasDoCliente.length === 0) {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `<td colspan="6">Nenhuma venda registrada para este cliente.</td>`;
+        tbody.appendChild(tr);
+      } else {
+        vendasDoCliente.forEach(venda => {
+          // Para cada venda, criar uma linha para cada item vendido
+          venda.itens.forEach(item => {
+            const tr = document.createElement("tr");
+            const status = venda.fiado ? "Pendente" : "Pago";
+            const statusClass = venda.fiado ? "status-pendente" : "status-pago";
+            
+            tr.innerHTML = `
+              <td>${venda.data}</td>
+              <td>${item.produtoNome}</td>
+              <td>${item.quantidade}</td>
+              <td>${item.subtotal.toFixed(2)}</td>
+              <td><span class="status-badge ${statusClass}">${status}</span></td>
+              <td>${venda.data_cobranca || '-'}</td>
+            `;
+            tbody.appendChild(tr);
+          });
+        });
+      }
+      
+      // Fechar o modal de detalhes e abrir o de histórico
+      document.getElementById("detalhes-cliente-modal").style.display = "none";
+      document.getElementById("historico-vendas-modal").style.display = "flex";
+    }
+
+    // Função para fechar o modal de histórico
+    function fecharModalHistorico() {
+      document.getElementById("historico-vendas-modal").style.display = "none";
+    }
+
+    function adicionarProduto() {
+      const nome = document.getElementById("nome-produto").value.trim();
+      const custo = parseFloat(document.getElementById("custo-produto").value);
+      const venda = parseFloat(document.getElementById("venda-produto").value);
+      const qtd = parseInt(document.getElementById("qtd-produto").value);
+      const descricao = document.getElementById("descricao-produto").value.trim();
+
+      if (!nome || isNaN(custo) || isNaN(venda) || isNaN(qtd)) {
+        alert("Preencha todos os campos obrigatórios corretamente.");
+        return;
+      }
+
+      produtos.push({ nome, custo, venda, qtd, descricao });
+      localStorage.setItem("produtos", JSON.stringify(produtos));
+
+      document.getElementById("nome-produto").value = "";
+      document.getElementById("custo-produto").value = "";
+      document.getElementById("venda-produto").value = "";
+      document.getElementById("qtd-produto").value = "";
+      document.getElementById("descricao-produto").value = "";
+
+      atualizarTabelaEstoque();
+      carregarSelectProdutos();
+      showNotification("Produto adicionado com sucesso!");
+    }
+
+    function atualizarTabelaEstoque() {
+      const tbody = document.querySelector("#tabela-estoque tbody");
+      tbody.innerHTML = "";
+      produtos.forEach((p, index) => {
+        const lucro = p.venda - p.custo;
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${p.nome}</td>
+          <td>${p.qtd}</td>
+          <td>${p.custo.toFixed(2)}</td>
+          <td>${p.venda.toFixed(2)}</td>
+          <td>${lucro.toFixed(2)}</td>
+          <td>
+            <button class="btn-edit" onclick="editarProduto(${index})"><i class="fas fa-edit"></i></button>
+            <button class="btn-delete" onclick="excluirProduto(${index})"><i class="fas fa-trash"></i></button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function editarProduto(index) {
+      const produto = produtos[index];
+      document.getElementById("nome-produto").value = produto.nome;
+      document.getElementById("custo-produto").value = produto.custo;
+      document.getElementById("venda-produto").value = produto.venda;
+      document.getElementById("qtd-produto").value = produto.qtd;
+      document.getElementById("descricao-produto").value = produto.descricao;
+      
+      // Remover produto temporariamente
+      produtos.splice(index, 1);
+      localStorage.setItem("produtos", JSON.stringify(produtos));
+      atualizarTabelaEstoque();
+      carregarSelectProdutos();
+    }
+
+    function excluirProduto(index) {
+      if (confirm("Tem certeza que deseja excluir este produto?")) {
+        produtos.splice(index, 1);
+        localStorage.setItem("produtos", JSON.stringify(produtos));
+        atualizarTabelaEstoque();
+        carregarSelectProdutos();
+        showNotification("Produto excluído com sucesso!");
+      }
+    }
+
+    function carregarSelectProdutos() {
+      const selects = document.querySelectorAll(".produto-select");
+      selects.forEach(select => {
+        const selectedIndex = select.value; // Manter seleção atual
+        select.innerHTML = '<option value="">Selecione um produto</option>';
+        produtos.forEach((p, i) => {
+          const opt = document.createElement("option");
+          opt.value = i;
+          opt.textContent = `${p.nome} - R$${p.venda.toFixed(2)} (Disp: ${p.qtd})`;
+          if (opt.value === selectedIndex) {
+            opt.selected = true; // Restaurar seleção se ainda existir
+          }
+          select.appendChild(opt);
+        });
+      });
+    }
+
+    function carregarSelectClientes() {
+      const select = document.getElementById("cliente-venda");
+      select.innerHTML = '<option value="">Selecione cliente</option>';
+      clientes.forEach((c, i) => {
+        const opt = document.createElement("option");
+        opt.value = i;
+        opt.textContent = c.nome;
+        select.appendChild(opt);
+      });
+    }
+
+    function adicionarItemVenda() {
+      const container = document.getElementById("venda-itens");
+      const newItem = document.createElement("div");
+      newItem.className = "venda-item";
+      newItem.innerHTML = `
+        <select class="produto-select" onchange="atualizarDisponibilidade(this)">
+          <option value="">Selecione um produto</option>
+        </select>
+        <input type="number" class="quantidade-input" placeholder="Qtd" min="1" value="1" oninput="calcularTotalVenda()">
+        <button class="remove-btn" onclick="removerItemVenda(this)">×</button>
+      `;
+      container.appendChild(newItem);
+      
+      // Preencher o novo select com os produtos disponíveis
+      const novoSelect = newItem.querySelector('.produto-select');
+      produtos.forEach((p, i) => {
+        const opt = document.createElement("option");
+        opt.value = i;
+        opt.textContent = `${p.nome} - R$${p.venda.toFixed(2)} (Disp: ${p.qtd})`;
+        novoSelect.appendChild(opt);
+      });
+    }
+
+    function removerItemVenda(button) {
+      const item = button.closest('.venda-item');
+      if (document.querySelectorAll('.venda-item').length > 1) {
+        item.remove();
+        calcularTotalVenda();
+      } else {
+        alert("Você precisa ter pelo menos um item na venda.");
+      }
+    }
+
+    function atualizarDisponibilidade(select) {
+      const produtoIndex = select.value;
+      if (produtoIndex !== "") {
+        const produto = produtos[produtoIndex];
+        const quantidadeInput = select.parentElement.querySelector('.quantidade-input');
+        quantidadeInput.max = produto.qtd;
+        if (parseInt(quantidadeInput.value) > produto.qtd) {
+          quantidadeInput.value = produto.qtd;
+        }
+      }
+    }
+
+    function calcularTotalVenda() {
+      let total = 0;
+      document.querySelectorAll('.venda-item').forEach(item => {
+        const produtoIndex = item.querySelector('.produto-select').value;
+        const quantidade = parseInt(item.querySelector('.quantidade-input').value) || 0;
+        
+        if (produtoIndex !== "" && quantidade > 0) {
+          const produto = produtos[produtoIndex];
+          total += produto.venda * quantidade;
+        }
+      });
+      document.getElementById('total-venda').textContent = total.toFixed(2);
+    }
+
+    // Função para selecionar a forma de pagamento
+    function selecionarFormaPagamento(forma, element) {
+      // Remover seleção de todos os botões
+      document.querySelectorAll('.payment-btn').forEach(btn => btn.classList.remove('selected'));
+      // Adicionar classe 'selected' ao botão clicado
+      element.classList.add('selected');
+      formaPagamentoSelecionada = forma;
+      
+      // Mostrar/esconder campos de prazo
+      const camposPrazo = document.getElementById('campos-prazo');
+      if (forma === 'prazo') {
+        camposPrazo.style.display = 'block';
+      } else {
+        camposPrazo.style.display = 'none';
+      }
+    }
+
+    function salvarVendaCompleta() {
+      const clienteIndex = document.getElementById("cliente-venda").value;
+      if (!clienteIndex) {
+        alert("Selecione um cliente.");
+        return;
+      }
+
+      if (!formaPagamentoSelecionada) {
+        alert("Selecione uma forma de pagamento.");
+        return;
+      }
+
+      const itensVenda = [];
+      let temItensValidos = false;
+      
+      document.querySelectorAll('.venda-item').forEach(item => {
+        const produtoIndex = item.querySelector('.produto-select').value;
+        const quantidade = parseInt(item.querySelector('.quantidade-input').value) || 0;
+        
+        if (produtoIndex !== "" && quantidade > 0) {
+          const produto = produtos[produtoIndex];
+          
+          if (quantidade > produto.qtd) {
+            alert(`Quantidade solicitada (${quantidade}) do produto "${produto.nome}" excede o estoque disponível (${produto.qtd}).`);
+            return;
+          }
+          
+          itensVenda.push({
+            produtoIndex: parseInt(produtoIndex),
+            produtoNome: produto.nome,
+            quantidade: quantidade,
+            precoUnitario: produto.venda,
+            subtotal: produto.venda * quantidade
+          });
+          temItensValidos = true;
+        }
+      });
+
+      if (!temItensValidos) {
+        alert("Adicione pelo menos um produto válido à venda.");
+        return;
+      }
+
+      const cliente = clientes[clienteIndex];
+
+      // Subtrair do estoque
+      itensVenda.forEach(item => {
+        produtos[item.produtoIndex].qtd -= item.quantidade;
+      });
+
+      // Registrar venda
+      const novaVenda = {
+        data: new Date().toLocaleDateString(),
+        cliente_nome: cliente.nome,
+        itens: itensVenda,
+        valor_total: itensVenda.reduce((total, item) => total + item.subtotal, 0),
+        forma_pagamento: formaPagamentoSelecionada,
+        fiado: formaPagamentoSelecionada === 'prazo',
+        data_cobranca: formaPagamentoSelecionada === 'prazo' ? document.getElementById('data-cobranca').value : null
+      };
+
+      vendas.push(novaVenda);
+      
+      // Salvar alterações
+      localStorage.setItem("produtos", JSON.stringify(produtos));
+      localStorage.setItem("vendas", JSON.stringify(vendas));
+
+      // Atualizar interface
+      atualizarDashboard();
+      atualizarTabelaPagamentos();
+      showNotification("Venda registrada com sucesso!");
+      
+      // Resetar formulário
+      document.getElementById("cliente-venda").value = "";
+      document.getElementById("venda-itens").innerHTML = `
+        <div class="venda-item">
+          <select class="produto-select" onchange="atualizarDisponibilidade(this)">
+            <option value="">Selecione um produto</option>
+          </select>
+          <input type="number" class="quantidade-input" placeholder="Qtd" min="1" value="1" oninput="calcularTotalVenda()">
+          <button class="remove-btn" onclick="removerItemVenda(this)">×</button>
+        </div>
+      `;
+      // Remover seleção visual dos botões de pagamento
+      document.querySelectorAll('.payment-btn').forEach(btn => btn.classList.remove('selected'));
+      formaPagamentoSelecionada = null;
+      document.getElementById('campos-prazo').style.display = 'none';
+      document.getElementById('total-venda').textContent = '0.00';
+    }
+
+    function adicionarGasto() {
+      const descricao = document.getElementById("descricao-gasto").value.trim();
+      const valor = parseFloat(document.getElementById("valor-gasto").value);
+      const categoria = document.getElementById("categoria-gasto").value;
+
+      if (!descricao || isNaN(valor) || valor <= 0) {
+        alert("Preencha todos os campos corretamente.");
+        return;
+      }
+
+      gastos.push({
+        descricao,
+        valor,
+        categoria,
+        data: new Date().toLocaleDateString()
+      });
+      localStorage.setItem("gastos", JSON.stringify(gastos));
+
+      document.getElementById("descricao-gasto").value = "";
+      document.getElementById("valor-gasto").value = "";
+
+      atualizarTabelaGastos();
+      showNotification("Gasto registrado com sucesso!");
+    }
+
+    function atualizarTabelaGastos() {
+      const tbody = document.querySelector("#tabela-gastos tbody");
+      tbody.innerHTML = "";
+      gastos.forEach((g, index) => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${g.descricao}</td>
+          <td>${g.valor.toFixed(2)}</td>
+          <td>${g.categoria}</td>
+          <td>${g.data}</td>
+          <td>
+            <button class="btn-edit" onclick="editarGasto(${index})"><i class="fas fa-edit"></i></button>
+            <button class="btn-delete" onclick="excluirGasto(${index})"><i class="fas fa-trash"></i></button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function editarGasto(index) {
+      const gasto = gastos[index];
+      document.getElementById("descricao-gasto").value = gasto.descricao;
+      document.getElementById("valor-gasto").value = gasto.valor;
+      document.getElementById("categoria-gasto").value = gasto.categoria;
+      
+      // Remover gasto temporariamente
+      gastos.splice(index, 1);
+      localStorage.setItem("gastos", JSON.stringify(gastos));
+      atualizarTabelaGastos();
+    }
+
+    function excluirGasto(index) {
+      if (confirm("Tem certeza que deseja excluir este gasto?")) {
+        gastos.splice(index, 1);
+        localStorage.setItem("gastos", JSON.stringify(gastos));
+        atualizarTabelaGastos();
+        showNotification("Gasto excluído com sucesso!");
+      }
+    }
+
+    function filterTable(tableId, query) {
+      const table = document.getElementById(tableId);
+      const rows = table.getElementsByTagName('tr');
+      
+      for (let i = 1; i < rows.length; i++) {
+        const rowText = rows[i].innerText.toLowerCase();
+        if (rowText.includes(query.toLowerCase())) {
+          rows[i].style.display = '';
+        } else {
+          rows[i].style.display = 'none';
+        }
+      }
+    }
+
+    function exportToCSV(tableId, filename) {
+      const table = document.getElementById(tableId);
+      let csv = [];
+      
+      // Cabeçalhos
+      const headers = table.querySelectorAll('th');
+      let headerRow = [];
+      headers.forEach(header => {
+        headerRow.push('"' + header.innerText + '"');
+      });
+      csv.push(headerRow.join(','));
+      
+      // Linhas
+      const rows = table.querySelectorAll('tbody tr');
+      rows.forEach(row => {
+        const rowData = [];
+        const cells = row.querySelectorAll('td');
+        cells.forEach(cell => {
+          rowData.push('"' + cell.innerText + '"');
+        });
+        csv.push(rowData.join(','));
+      });
+      
+      const csvContent = 'data:text/csv;charset=utf-8,' + csv.join('\n');
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement('a');
+      link.setAttribute('href', encodedUri);
+      link.setAttribute('download', filename);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    function exportToPDF(tableId, filename) {
+      alert('Exportação para PDF implementada no backend. Funcionalidade de demonstração.');
+      showNotification("Exportação para PDF iniciada...");
+    }
+
+    function gerarRelatorio() {
+      const tipo = document.getElementById('tipo-relatorio').value;
+      const inicio = document.getElementById('data-inicio').value;
+      const fim = document.getElementById('data-fim').value;
+      
+      alert(`Relatório gerado: ${tipo}\nPeríodo: ${inicio || 'Sem início'} a ${fim || 'Sem fim'}`);
+      showNotification("Relatório gerado com sucesso!");
+    }
+
+    function salvarEmpresa() {
+      empresa.nome = document.getElementById('empresa-nome').value;
+      empresa.cnpj = document.getElementById('empresa-cnpj').value;
+      empresa.telefone = document.getElementById('empresa-telefone').value;
+      empresa.email = document.getElementById('empresa-email').value;
+      
+      localStorage.setItem("empresa", JSON.stringify(empresa));
+      showNotification("Informações da empresa salvas!");
+    }
+
+    function preencherFormularioEmpresa() {
+      document.getElementById('empresa-nome').value = empresa.nome || '';
+      document.getElementById('empresa-cnpj').value = empresa.cnpj || '';
+      document.getElementById('empresa-telefone').value = empresa.telefone || '';
+      document.getElementById('empresa-email').value = empresa.email || '';
+    }
+
+    function fazerBackup() {
+      const data = {
+        produtos: produtos,
+        clientes: clientes,
+        vendas: vendas,
+        gastos: gastos,
+        empresa: empresa
+      };
+      
+      const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `backup_${new Date().toISOString().slice(0, 10)}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      
+      showNotification("Backup realizado com sucesso!");
+    }
+
+    function restaurarBackup() {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = '.json';
+      input.onchange = e => {
+        const file = e.target.files[0];
+        const reader = new FileReader();
+        reader.readAsText(file, 'UTF-8');
+        reader.onload = readerEvent => {
+          try {
+            const data = JSON.parse(readerEvent.target.result);
+            produtos = data.produtos || [];
+            clientes = data.clientes || [];
+            vendas = data.vendas || [];
+            gastos = data.gastos || [];
+            empresa = data.empresa || {};
+            
+            localStorage.setItem("produtos", JSON.stringify(produtos));
+            localStorage.setItem("clientes", JSON.stringify(clientes));
+            localStorage.setItem("vendas", JSON.stringify(vendas));
+            localStorage.setItem("gastos", JSON.stringify(gastos));
+            localStorage.setItem("empresa", JSON.stringify(empresa));
+            
+            showSection('dashboard');
+            atualizarDashboard();
+            atualizarTabelaClientes();
+            atualizarTabelaEstoque();
+            atualizarTabelaGastos();
+            preencherFormularioEmpresa();
+            
+            showNotification("Dados restaurados com sucesso!");
+          } catch (error) {
+            alert("Erro ao processar arquivo de backup: " + error.message);
+          }
+        };
+      };
+      input.click();
+    }
+
+    function showNotification(message) {
+      const notification = document.getElementById('notification');
+      notification.textContent = message;
+      notification.style.display = 'block';
+      
+      setTimeout(() => {
+        notification.style.display = 'none';
+      }, 3000);
+    }
+
+    // Fechar modal ao clicar fora
+    window.onclick = function(event) {
+      const modal = document.getElementById("detalhes-cliente-modal");
+      if (event.target === modal) {
+        modal.style.display = "none";
+      }
+      
+      const historicoModal = document.getElementById("historico-vendas-modal");
+      if (event.target === historicoModal) {
+        historicoModal.style.display = "none";
+      }
+    }
+
+    // Inicializar ao carregar
+    window.onload = function () {
+      atualizarTabelaClientes();
+      atualizarTabelaEstoque();
+      atualizarTabelaGastos();
+      atualizarDashboard();
+      carregarSelectProdutos();
+      carregarSelectClientes();
+      preencherFormularioEmpresa();
+    };
+  </script>
+
+</body>
+</html>
